@@ -13,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -33,7 +34,7 @@ public class FishService {
     public void deleteFish(int id) {
         try {
             Fish fish = repo.findById(id).get();
-            Path imagePath = Paths.get("public/images/" + fish.getImageFileName());
+            Path imagePath = Paths.get("public/images/" + fish.getImageFileNames());
             Files.delete(imagePath);
             repo.delete(fish);
         } catch (Exception ex) {
@@ -42,24 +43,30 @@ public class FishService {
     }
 
     public void saveFish(FishDto fishDto) throws IOException {
-        MultipartFile image = fishDto.getImageFile();
+        List<MultipartFile> images = fishDto.getImageFiles();
         Date catchDate = new Date();
-        String storageFileName = catchDate.getTime() + "_" + image.getOriginalFilename();
+        List<String> storageFileNames = new ArrayList<>();
 
         String uploadDir = "public/images/";
         Path uploadPath = Paths.get(uploadDir);
-
         if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath);
         }
 
-        try (InputStream inputStream = image.getInputStream()) {
-            Files.copy(inputStream, Paths.get(uploadDir + storageFileName), StandardCopyOption.REPLACE_EXISTING);
+        for (MultipartFile image : images) {
+            if (image.isEmpty()) continue;
+
+            String originalName = Paths.get(image.getOriginalFilename()).getFileName().toString();
+            String storageFileName = catchDate.getTime() + "_" + originalName;
+            try (InputStream inputStream = image.getInputStream()) {
+                Files.copy(inputStream, uploadPath.resolve(storageFileName), StandardCopyOption.REPLACE_EXISTING);
+                storageFileNames.add(storageFileName);
+            }
         }
 
         Fish fish = new Fish();
         fish.setCatchDate(catchDate);
-        fish.setImageFileName(storageFileName);
+        fish.setImageFileNames(storageFileNames);
         fish.setName(fishDto.getName());
         fish.setPrice(fishDto.getPrice());
 
