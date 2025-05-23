@@ -32,53 +32,53 @@ import technikal.task.fishmarket.services.FishService;
 @Controller
 @RequestMapping("/fish")
 public class FishController {
-	
-	private final FishService service;
 
-	public FishController(FishService service) {
-		this.service = service;
-	}
+    private final FishService service;
 
-	@GetMapping({"", "/"})
-	public String showFishList(Model model) {
-		List<Fish> fishlist = service.getAllFish();
-		model.addAttribute("fishlist", fishlist);
-		return "index";
-	}
-	
-	@GetMapping("/create")
-	public String showCreatePage(Model model) {
-		FishDto fishDto = new FishDto();
-		model.addAttribute("fishDto", fishDto);
-		return "createFish";
-	}
-	
-	@GetMapping("/delete")
-	public String deleteFish(@RequestParam int id) {
-		service.deleteFish(id);
-		return "redirect:/fish";
-	}
+    public FishController(FishService service) {
+        this.service = service;
+    }
 
-	@PostMapping("/create")
-	public String addFish(@Valid @ModelAttribute FishDto fishDto, BindingResult result) {
+    @GetMapping({"", "/"})
+    public String showFishList(Model model) {
+        List<Fish> fishlist = service.getAllFish();
+        model.addAttribute("fishlist", fishlist);
+        return "index";
+    }
 
-		if (fishDto.getImageFile().isEmpty()) {
-			result.addError(new FieldError("fishDto", "imageFile", "Потрібне фото рибки"));
-		}
+    @GetMapping("/create")
+    public String showCreatePage(Model model) {
+        FishDto fishDto = new FishDto();
+        model.addAttribute("fishDto", fishDto);
+        return "createFish";
+    }
 
-		if (result.hasErrors()) {
-			return "createFish";
-		}
+    @GetMapping("/delete")
+    public String deleteFish(@RequestParam int id) {
+        service.deleteFish(id);
+        return "redirect:/fish";
+    }
 
-		try {
-			service.saveFish(fishDto);
-		} catch (IOException e) {
-			System.out.println("Exception: " + e.getMessage());
-			result.reject("imageFile", "Помилка при збереженні зображення");
-			return "createFish";
-		}
+    @PostMapping("/create")
+    public String addFish(@Valid @ModelAttribute FishDto fishDto, BindingResult result) {
+        List<MultipartFile> files = fishDto.getImageFiles();
+        if ((files == null) || files.stream().allMatch(MultipartFile::isEmpty)) {
+            result.addError(new FieldError("fishDto", "imageFiles", "Потрібно завантажити хоча б одне фото"));
+        }
 
-		return "redirect:/fish";
-	}
+        if (result.hasErrors()) {
+            return "createFish";
+        }
+
+        try {
+            service.saveFish(fishDto);
+        } catch (IOException e) {
+            System.out.println("Exception: " + e.getMessage());
+            result.reject("imageFile", "Помилка при збереженні зображення");
+            return "createFish";
+        }
+
+        return "redirect:/fish";
+    }
 
 }
