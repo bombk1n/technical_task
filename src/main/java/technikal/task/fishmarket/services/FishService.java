@@ -34,8 +34,14 @@ public class FishService {
     public void deleteFish(int id) {
         try {
             Fish fish = repo.findById(id).get();
-            Path imagePath = Paths.get("public/images/" + fish.getImageFileNames());
-            Files.delete(imagePath);
+            for (String fileName : fish.getImageFileNames()) {
+                Path imagePath = Paths.get("public/images/" + fileName);
+                try {
+                    Files.deleteIfExists(imagePath);
+                } catch (IOException e) {
+                    System.out.println("File could not be deleted: " + fileName);
+                }
+            }
             repo.delete(fish);
         } catch (Exception ex) {
             System.out.println("Exception: " + ex.getMessage());
