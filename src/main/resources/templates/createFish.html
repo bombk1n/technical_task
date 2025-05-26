@@ -41,8 +41,9 @@
                 <div class="row mb-3">
                     <label class="col-sm-4 col-form-label">Фото</label>
                     <div class="col-sm-8">
-                        <input class="form-control" type="file" multiple
-                               th:field="*{imageFiles}">
+                        <input class="form-control" type="file" multiple accept="image/*"
+                               th:field="*{imageFiles}" id="imageFilesInput">
+                        <p id="imageError" class="text-danger d-none">Дозволені лише фото (JPG, PNG, GIF).</p>
                         <p th:if="${#fields.hasErrors('imageFiles')}"
                            th:errorclass="text-danger" th:errors="*{imageFiles}"></p>
                     </div>

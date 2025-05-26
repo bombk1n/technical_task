@@ -1,5 +1,6 @@
 package technikal.task.fishmarket.models;
 
+import jakarta.validation.constraints.Size;
 import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.validation.constraints.Min;
@@ -14,6 +15,8 @@ public class FishDto {
 	private String name;
 	@Min(0)
 	private double price;
+
+	@Size(max = 3, message = "Максимум 3 фото")
 	private List<MultipartFile> imageFiles;
 	
 	public String getName() {
